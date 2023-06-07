@@ -8,6 +8,9 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/userModels');
 const Artikel = require('../models/artikelModels');
+const Payment = require('../models/paymentModels');
+const Mentor = require('../models/mentorModels');
+const Kursus = require('../models/kursusModels');
 const app = express();
 const jwtSecret = process.env.JWT_SECRET;
 
@@ -154,39 +157,18 @@ const upload = multer({ storage: storage });
 const formData = new FormData();
 
 
-
 // API untuk mengunggah gambar
 app.post('/upload', upload.single('image'), async (req, res) => {
   try {
     const { filename, path } = req.file;
     const { judul, author, status, date, subJudul, content} = req.body;
-    const contentData = [
-      {
-        text: '"Aku mencoba untuk mempertahankan Semua kenangan yang telah kita bagi Tapi semuanya merosot di hadapanku Dan aku tidak tahu apa yang harus kuperbuat"'
-      },
-      {
-        text: '"Apakah kau masih merindukanku Seperti yang kurasakan setiap hari? Atau kau sudah melupakan diriku Seperti bintang-bintang di langit yang jauh?"'
-      },
-      {
-        text: '"Aku mencoba untuk tidak menangis Tetapi air mataku terus mengalir Karena kau tidak di sini untuk menghiburku Dan hatiku terus merana dan sepi"'
-      },
-      {
-        text: '"Kita mungkin berada di sisi lain dunia Tapi aku akan selalu mencintaimu Walaupun kau terlalu jauh untuk dicapai Dan aku harus melanjutkan hidupku tanpamu"'
-      }
-    ];
-    // formData.append('content', JSON.stringify(contentData));
-
-    // const parsedContent = JSON.parse(contentData);
-    // console.log(`ini artikel ${contentData}`);
-
-    // Tambahkan data gambar ke database
     const artikel = await Artikel.create({
       judul,
       author,
       status,
       date,
       subJudul,
-      content: contentData,
+      content,
       filename,
       filepath: path,
     });
@@ -196,6 +178,99 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Terjadi kesalahan pada server' });
   }
+});
+
+
+app.post('/uploadPay', upload.single('image'), async (req, res) => {
+  try {
+    const { filename, path } = req.file;
+    const {metode, va} = req.body;
+
+    const payment = await Payment.create({
+      metode,
+      va,
+      filename,
+      filepath: path,
+    });
+
+    res.json(payment);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+  }
+});
+
+app.post('/uploadMentor', upload.single('image'), async(req, res) => {
+  try {
+    const {filename, path} = req.file;
+    const {nama, deskripsi, keahlian} = req.body;
+
+    const mentor = await Mentor.create({
+      nama,
+      deskripsi,
+      keahlian,
+      filename,
+      filepath: path,
+    });
+
+    res.json(mentor)
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+  }
+});
+
+app.get('/mentor', async (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader){
+    return res.status(401).json({
+      error: 'Token tidak ditemukan'
+    });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  jwt.verify(token, jwtSecret, async (error, decoded) => {
+    if (error){
+      return res.status(401).json({error: 'Token tidak ditemukan'});
+    }
+
+    try {
+      const mentor = Mentor.findAll();
+
+      res.json(mentor)
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+    }
+  });
+})
+
+app.get('/payment', async (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader){
+    return res.status(401).json({
+      error: 'Token tidak ditemukan'
+    });
+  }
+
+  const token = authHeader.split(' ')[1];
+  jwt.verify(token, jwtSecret, async (error, decoded) => {
+    if (error){
+      return res.status(401).json({error: 'Token tidak ditemukan'});
+    }
+
+    try {
+      const payment = await Payment.findAll();
+
+      res.json(payment);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+    }
+  });
 });
 
 app.get('/artikel', async (req, res) => {
@@ -225,21 +300,70 @@ app.get('/artikel', async (req, res) => {
   
 });
 
-app.get('/artikel/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    console.log(`ini ${id}`);
-    const artikel = await Artikel.findByPk(id);
+app.get('/payment/:id', async (req, res) => {
+  const authHeader = req.headers.authorization;
 
-    if (!artikel) {
-      return res.status(404).json({ error: 'Artikel tidak ditemukan' });
+  if (!authHeader){
+    return res.status(401).json({error: 'Token tidak ditemukan'});
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  jwt.verify(token, jwtSecret, async (error, decoded) => {
+    if (error) {
+      return res.status(401).json({ error: 'Token tidak valid' });
     }
 
-    res.json(artikel);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+    try {
+      const { id } = req.params;
+      
+      const payment = Payment.findByPk(id);
+
+      if (!payment){
+        return res.status(404).json({ error: 'Payment tidak ditemukan' });
+      }
+
+      res.json(payment);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+    }
+  });
+
+});
+
+app.get('/artikel/:id', async (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Token tidak ditemukan' });
   }
+
+    // Split header Authorization untuk mendapatkan token
+  const token = authHeader.split(' ')[1];
+
+
+  jwt.verify(token, jwtSecret, async (error, decoded) => {
+    if (error) {
+      return res.status(401).json({ error: 'Token tidak valid' });
+    }
+
+    try {
+      const { id } = req.params;
+      console.log(`ini ${id}`);
+      const artikel = await Artikel.findByPk(id);
+  
+      if (!artikel) {
+        return res.status(404).json({ error: 'Artikel tidak ditemukan' });
+      }
+  
+      res.json(artikel);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+    }
+  });
+ 
 });
 
 
