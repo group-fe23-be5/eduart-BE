@@ -180,6 +180,28 @@ app.post('/upload', upload.single('image'), async (req, res) => {
   }
 });
 
+app.post('/uploadKursus', upload.single('image'), async (req, res) => {
+  try {
+    const { filename, path } = req.file;
+    const {judul, deskripsi,video, harga} = req.body;
+
+    const kursus = await Kursus.create({
+      judul,
+      deskripsi,
+      video,
+      harga,
+      silabus,
+      filename,
+      filepath: path,
+    });
+
+    res.json(kursus);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+  }
+});
+
 
 app.post('/uploadPay', upload.single('image'), async (req, res) => {
   try {
@@ -218,6 +240,33 @@ app.post('/uploadMentor', upload.single('image'), async(req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Terjadi kesalahan pada server' });
   }
+});
+
+app.get('/kursus', async (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader){
+    return res.status(401).json({
+      error: 'Token tidak ditemukan'
+    });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  jwt.verify(token, jwtSecret, async (error, decoded) => {
+    if (error){
+      return res.status(401).json({error: 'Token tidak ditemukan'});
+    }
+
+    try {
+      const kursus = Kursus.findAll();
+
+      res.json(kursus);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+    }
+  });
 });
 
 app.get('/mentor', async (req, res) => {
@@ -330,6 +379,38 @@ app.get('/payment/:id', async (req, res) => {
     }
   });
 
+});
+
+app.get('/kursus/:id', async (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Token tidak ditemukan' });
+  }
+
+    // Split header Authorization untuk mendapatkan token
+  const token = authHeader.split(' ')[1];
+
+  jwt.verify(token, jwtSecret, async (error, decoded) => {
+    if (error) {
+      return res.status(401).json({ error: 'Token tidak valid' });
+    }
+
+    try {
+      const { id } = req.params;
+      console.log(`ini ${id}`);
+      const kursus = await Kursus.findByPk(id);
+  
+      if (!kursus) {
+        return res.status(404).json({ error: 'Kursus tidak ditemukan' });
+      }
+  
+      res.json(kursus);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+    }
+  });
 });
 
 app.get('/artikel/:id', async (req, res) => {
