@@ -61,7 +61,7 @@ app.post('/login', async (req, res) => {
     }
 
     // Buat token JWT
-    const token = jwt.sign({ email }, jwtSecret, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id }, jwtSecret, { expiresIn: '1h' });
 
     // Set token sebagai cookie pada response
     res.cookie('token', token, { httpOnly: true });
@@ -103,34 +103,75 @@ app.post('/logout', (req, res) => {
 });
 
 // Endpoint untuk mendapatkan daftar pengguna
+// app.get('/users', async (req, res) => {
+//   try {
+//     // Dapatkan token dari header Authorization
+//     const authHeader = req.headers.authorization;
+//     console.log(`ini token ${authHeader}`);
+
+//     if (!authHeader) {
+//       return res.status(401).json({ error: 'Token tidak ditemukan' });
+//     }
+
+//     // Split header Authorization untuk mendapatkan token
+//     const token = authHeader.split(' ')[1];
+
+//     // Verifikasi token
+//     jwt.verify(token, jwtSecret, async (error, decoded) => {
+//       if (error) {
+//         return res.status(401).json({ error: 'Token tidak valid' });
+//       }
+
+//       // Lakukan tindakan yang diperlukan untuk mendapatkan daftar pengguna dari database
+//       try {
+//         // Lakukan tindakan yang diperlukan untuk mendapatkan daftar pengguna dari database
+//         const users = await User.findAll({
+//           attributes: { exclude: ['password'] } // Exclude field 'password' from the result
+//         });
+
+//         // Mengembalikan daftar pengguna tanpa password
+//         res.json(users);
+//       } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+//       }
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+//   }
+// });
+
 app.get('/users', async (req, res) => {
   try {
-    // Dapatkan token dari header Authorization
     const authHeader = req.headers.authorization;
-    console.log(`ini token ${authHeader}`);
 
     if (!authHeader) {
       return res.status(401).json({ error: 'Token tidak ditemukan' });
     }
 
-    // Split header Authorization untuk mendapatkan token
     const token = authHeader.split(' ')[1];
 
-    // Verifikasi token
     jwt.verify(token, jwtSecret, async (error, decoded) => {
       if (error) {
         return res.status(401).json({ error: 'Token tidak valid' });
       }
 
-      // Lakukan tindakan yang diperlukan untuk mendapatkan daftar pengguna dari database
+      // Mengakses ID pengguna dari token yang sudah diverifikasi
+      const userId = decoded.id;
+      console.log(`ini userID ${userId}`);
+
       try {
-        // Lakukan tindakan yang diperlukan untuk mendapatkan daftar pengguna dari database
-        const users = await User.findAll({
-          attributes: { exclude: ['password'] } // Exclude field 'password' from the result
+        // Menggunakan ID pengguna untuk mendapatkan pengguna dari database
+        const user = await User.findByPk(userId, {
+          attributes: { exclude: ['password'] }
         });
 
-        // Mengembalikan daftar pengguna tanpa password
-        res.json(users);
+        if (!user) {
+          return res.status(404).json({ error: 'Pengguna tidak ditemukan' });
+        }
+
+        res.json(user);
       } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Terjadi kesalahan pada server' });
@@ -141,6 +182,7 @@ app.get('/users', async (req, res) => {
     res.status(500).json({ error: 'Terjadi kesalahan pada server' });
   }
 });
+
 
 // Konfigurasi multer untuk mengunggah file
 const storage = multer.diskStorage({
@@ -323,29 +365,37 @@ app.get('/payment', async (req, res) => {
 });
 
 app.get('/artikel', async (req, res) => {
-  const authHeader = req.headers.authorization;
+  // const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Token tidak ditemukan' });
-  }
+  // if (!authHeader) {
+  //   return res.status(401).json({ error: 'Token tidak ditemukan' });
+  // }
 
-    // Split header Authorization untuk mendapatkan token
-  const token = authHeader.split(' ')[1];
-  jwt.verify(token, jwtSecret, async (error, decoded) => {
-    if (error) {
-      return res.status(401).json({ error: 'Token tidak valid' });
-    }
+  //   // Split header Authorization untuk mendapatkan token
+  // const token = authHeader.split(' ')[1];
+  // jwt.verify(token, jwtSecret, async (error, decoded) => {
+  //   if (error) {
+  //     return res.status(401).json({ error: 'Token tidak valid' });
+  //   }
 
-    try {
-      const artikel = await Artikel.findAll();
+  //   try {
+  //     const artikel = await Artikel.findAll();
   
-      res.json(artikel);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Terjadi kesalahan pada server' });
-    }
+  //     res.json(artikel);
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+  //   }
     
-  });
+  // });
+  try {
+    const artikel = await Artikel.findAll();
+
+    res.json(artikel);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+  }
   
 });
 
