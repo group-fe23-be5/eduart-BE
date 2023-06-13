@@ -98,7 +98,10 @@ app.post('/logout', (req, res) => {
 
     // Lakukan tindakan tambahan setelah berhasil logout, misalnya menghapus token dari database atau melakukan log aktivitas
 
-    res.json({ message: 'Logout berhasil' });
+    res.json({
+      code: 200, 
+      message: 'Logout berhasil' 
+    });
   });
 });
 
@@ -225,14 +228,25 @@ app.post('/upload', upload.single('image'), async (req, res) => {
 app.post('/uploadKursus', upload.single('image'), async (req, res) => {
   try {
     const { filename, path } = req.file;
-    const {judul, deskripsi,video, harga} = req.body;
+    const {judul, deskiripsi,video, harga, silabus} = req.body;
+    console.log(`ini ${judul}`)
+    console.log(`ini ${deskiripsi}`)
+    console.log(`ini ${video}`)
+    console.log(`ini ${harga}`)
+
+    const silabusData = [
+      "Modul Gerak Dasar",
+      "Modul Dasar Tempo Gerak",
+      "Modul Pengaplikasian seni tari",
+      "Praktek Tari Traditional"
+    ];
 
     const kursus = await Kursus.create({
       judul,
-      deskripsi,
+      deskiripsi,
       video,
       harga,
-      silabus,
+      silabus: silabusData,
       filename,
       filepath: path,
     });
@@ -285,30 +299,39 @@ app.post('/uploadMentor', upload.single('image'), async(req, res) => {
 });
 
 app.get('/kursus', async (req, res) => {
-  const authHeader = req.headers.authorization;
+  // const authHeader = req.headers.authorization;
 
-  if (!authHeader){
-    return res.status(401).json({
-      error: 'Token tidak ditemukan'
-    });
+  // if (!authHeader){
+  //   return res.status(401).json({
+  //     error: 'Token tidak ditemukan'
+  //   });
+  // }
+
+  // const token = authHeader.split(' ')[1];
+
+  // jwt.verify(token, jwtSecret, async (error, decoded) => {
+  //   if (error){
+  //     return res.status(401).json({error: 'Token tidak ditemukan'});
+  //   }
+
+  //   try {
+  //     const kursus = Kursus.findAll();
+
+  //     res.json(kursus);
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+  //   }
+  // });
+
+  try {
+    const kursus = Kursus.findAll();
+
+    res.json(kursus);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Terjadi kesalahan pada server' });
   }
-
-  const token = authHeader.split(' ')[1];
-
-  jwt.verify(token, jwtSecret, async (error, decoded) => {
-    if (error){
-      return res.status(401).json({error: 'Token tidak ditemukan'});
-    }
-
-    try {
-      const kursus = Kursus.findAll();
-
-      res.json(kursus);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Terjadi kesalahan pada server' });
-    }
-  });
 });
 
 app.get('/mentor', async (req, res) => {
@@ -464,36 +487,51 @@ app.get('/kursus/:id', async (req, res) => {
 });
 
 app.get('/artikel/:id', async (req, res) => {
-  const authHeader = req.headers.authorization;
+  // const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Token tidak ditemukan' });
+  // if (!authHeader) {
+  //   return res.status(401).json({ error: 'Token tidak ditemukan' });
+  // }
+
+  //   // Split header Authorization untuk mendapatkan token
+  // const token = authHeader.split(' ')[1];
+
+
+  // jwt.verify(token, jwtSecret, async (error, decoded) => {
+  //   if (error) {
+  //     return res.status(401).json({ error: 'Token tidak valid' });
+  //   }
+
+  //   try {
+  //     const { id } = req.params;
+  //     console.log(`ini ${id}`);
+  //     const artikel = await Artikel.findByPk(id);
+  
+  //     if (!artikel) {
+  //       return res.status(404).json({ error: 'Artikel tidak ditemukan' });
+  //     }
+  
+  //     res.json(artikel);
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+  //   }
+  // });
+
+  try {
+    const { id } = req.params;
+    console.log(`ini ${id}`);
+    const artikel = await Artikel.findByPk(id);
+
+    if (!artikel) {
+      return res.status(404).json({ error: 'Artikel tidak ditemukan' });
+    }
+
+    res.json(artikel);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Terjadi kesalahan pada server' });
   }
-
-    // Split header Authorization untuk mendapatkan token
-  const token = authHeader.split(' ')[1];
-
-
-  jwt.verify(token, jwtSecret, async (error, decoded) => {
-    if (error) {
-      return res.status(401).json({ error: 'Token tidak valid' });
-    }
-
-    try {
-      const { id } = req.params;
-      console.log(`ini ${id}`);
-      const artikel = await Artikel.findByPk(id);
-  
-      if (!artikel) {
-        return res.status(404).json({ error: 'Artikel tidak ditemukan' });
-      }
-  
-      res.json(artikel);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Terjadi kesalahan pada server' });
-    }
-  });
  
 });
 
