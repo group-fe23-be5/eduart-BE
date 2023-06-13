@@ -12,7 +12,7 @@ const Payment = require('../models/paymentModels');
 const Mentor = require('../models/mentorModels');
 const Kursus = require('../models/kursusModels');
 const app = express();
-const jwtSecret = process.env.JWT_SECRET;
+const jwtSecret = "3jk4b324b23k3j32b";
 
 // Endpoint untuk registrasi
 app.post('/register', async (req, res) => {
