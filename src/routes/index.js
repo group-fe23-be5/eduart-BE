@@ -234,19 +234,12 @@ app.post('/uploadKursus', upload.single('image'), async (req, res) => {
     console.log(`ini ${video}`)
     console.log(`ini ${harga}`)
 
-    const silabusData = [
-      "Modul Dasar brainstorming",
-      "Modul Dasar feel design",
-      "Modul Pengaplikasian design",
-      "Praktek Design"
-    ];
-
     const kursus = await Kursus.create({
       judul,
       deskiripsi,
       video,
       harga,
-      silabus: silabusData,
+      silabus,
       filename,
       filepath: path,
     });
