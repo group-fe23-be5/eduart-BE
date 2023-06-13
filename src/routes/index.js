@@ -206,11 +206,10 @@ const upload = multer({ storage: storage });
 app.post('/upload', upload.single('image'), async (req, res) => {
   try {
     const { filename, path } = req.file;
-    const { judul, author, status, date, subJudul, content} = req.body;
+    const { judul, author, date, subJudul, content} = req.body;
     const artikel = await Artikel.create({
       judul,
       author,
-      status,
       date,
       subJudul,
       content,
