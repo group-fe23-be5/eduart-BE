@@ -317,7 +317,7 @@ app.get('/kursus', async (req, res) => {
   // });
 
   try {
-    const kursus = Kursus.findAll();
+    const kursus = await Kursus.findAll();
     console.log(`ini kursuss ${kursus}`);
 
     res.json(kursus);
@@ -344,7 +344,7 @@ app.get('/mentor', async (req, res) => {
     }
 
     try {
-      const mentor = Mentor.findAll();
+      const mentor = await Mentor.findAll();
       console.log(`ini mentor ${mentor}`)
 
       res.json(mentor)
