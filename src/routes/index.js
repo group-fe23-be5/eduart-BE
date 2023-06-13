@@ -318,6 +318,7 @@ app.get('/kursus', async (req, res) => {
 
   try {
     const kursus = Kursus.findAll();
+    console.log(`ini kursuss ${kursus}`);
 
     res.json(kursus);
   } catch (error) {
@@ -344,6 +345,7 @@ app.get('/mentor', async (req, res) => {
 
     try {
       const mentor = Mentor.findAll();
+      console.log(`ini mentor ${mentor}`)
 
       res.json(mentor)
     } catch (error) {
