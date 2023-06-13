@@ -199,7 +199,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-const formData = new FormData();
+// const formData = new FormData();
 
 
 // API untuk mengunggah gambar
@@ -235,10 +235,10 @@ app.post('/uploadKursus', upload.single('image'), async (req, res) => {
     console.log(`ini ${harga}`)
 
     const silabusData = [
-      "Modul Gerak Dasar",
-      "Modul Dasar Tempo Gerak",
-      "Modul Pengaplikasian seni tari",
-      "Praktek Tari Traditional"
+      "Modul Dasar brainstorming",
+      "Modul Dasar feel design",
+      "Modul Pengaplikasian design",
+      "Praktek Design"
     ];
 
     const kursus = await Kursus.create({
