@@ -3,12 +3,12 @@ const {Sequelize} = require('sequelize');
 
 // Koneksi ke database MySQL
 const sequelize = new Sequelize(
-    process.env.DB_DATABASE,
-    process.env.DB_USERNAME,
-    process.env.DB_PASSWORD,
+    "railway",
+    "root",
+    "X7nosSDmTZSfanoJ0v9A",
     {
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT,
+      host: "containers-us-west-98.railway.app",
+      port: 5534,
       dialect: 'mysql'
     }
   );
