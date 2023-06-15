@@ -433,7 +433,7 @@ app.get('/payment/:id', async (req, res) => {
     try {
       const { id } = req.params;
       
-      const payment = Payment.findByPk(id);
+      const payment = await Payment.findByPk(id);
 
       if (!payment){
         return res.status(404).json({ error: 'Payment tidak ditemukan' });
